@@ -119,27 +119,48 @@
             }
         });
 
-        function checkLessonStatus(uid) {
-            db.ref('progress/' + uid + '/lesson1').on('value', snap => {
-                if (snap.exists()) {
-                    document.getElementById('btn-done').style.display = 'none';
-                    document.getElementById('status-msg').style.display = 'block';
-                } else {
-                    document.getElementById('btn-done').style.display = 'inline-block';
-                    document.getElementById('status-msg').style.display = 'none';
-                }
-            });
+        // دالة للتحقق من حالة الدرس وجلب النقاط
+function checkLessonStatus(uid) {
+    // 1. جلب حالة الدرس
+    db.ref('progress/' + uid + '/lesson1').on('value', snap => {
+        const btnDone = document.getElementById('btn-done');
+        const statusMsg = document.getElementById('status-msg');
+        
+        if (snap.exists()) {
+            btnDone.style.display = 'none';
+            statusMsg.style.display = 'block';
+            statusMsg.innerHTML = "أحسنت! لقد أتممت هذا الدرس بنجاح ✅";
+        } else {
+            btnDone.style.display = 'inline-block';
+            statusMsg.style.display = 'none';
         }
+    });
 
-        function markAsComplete() {
-            const user = auth.currentUser;
-            if (user) {
-                db.ref('progress/' + user.uid + '/lesson1').set({
-                    timestamp: Date.now(),
-                    completed: true
-                });
-            }
-        }
+    // 2. جلب مجموع النقاط وعرضه بجانب الاسم
+    db.ref('users/' + uid + '/points').on('value', snap => {
+        const points = snap.val() || 0;
+        document.getElementById('user-info').innerHTML = 
+            `مرحباً: ${auth.currentUser.displayName} | <span style='color:#ffeb3b; font-weight:bold;'>نقاطك: ${points}</span>`;
+    });
+}
+
+// دالة إتمام الدرس وزيادة النقاط
+function markAsComplete() {
+    const user = auth.currentUser;
+    if (user) {
+        // إضافة الدرس للمنجزات
+        db.ref('progress/' + user.uid + '/lesson1').set({
+            completed: true,
+            date: Date.now()
+        });
+
+        // زيادة النقاط (مثلاً 50 نقطة لكل درس)
+        const pointsRef = db.ref('users/' + user.uid + '/points');
+        pointsRef.transaction((currentPoints) => {
+            return (currentPoints || 0) + 50;
+        });
+    }
+}
     </script>
 </body>
 </html>
