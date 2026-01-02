@@ -1,1 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدرس 1: أساسيات HTML</title>
+    <style>
+        /* تنسيقات الدرس */
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; line-height: 1.6; }
+        .lesson-container { max-width: 850px; margin: auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h1 { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        h2 { color: #333; margin-top: 25px; }
+        .code-box { background: #272822; color: #f8f8f2; padding: 20px; border-radius: 8px; font-family: 'Consolas', monospace; direction: ltr; text-align: left; overflow-x: auto; margin: 20px 0; }
+        .info-card { background: #e7f3ff; border-right: 5px solid #007bff; padding: 15px; margin: 20px 0; border-radius: 5px; }
+        .btn-success { background-color: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-size: 18px; width: 100%; transition: 0.3s; }
+        .btn-success:hover { background-color: #218838; }
+        #completion-msg { display: none; background: #d4edda; color: #155724; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
 
+<div class="lesson-container">
+    <h1>الدرس الأول: مقدمة في لغة HTML</h1>
+    
+    <div class="info-card">
+        <strong>ما هي HTML؟</strong><br>
+        هي لغة توصيف النصوص التشعبية (HyperText Markup Language). ليست لغة برمجة بالمعنى التقليدي، بل هي اللغة التي نستخدمها لتصميم "هيكل" أي صفحة ويب.
+    </div>
+
+    <h2>1. بنية الصفحة الأساسية</h2>
+    <p>كل ملف HTML يجب أن يحتوي على هذه الوسوم (Tags) الأساسية لكي يفهمه المتصفح:</p>
+
+    <div class="code-box">
+&lt;!DOCTYPE html&gt; <br>
+&lt;html&gt; <br>
+&nbsp;&nbsp;&lt;head&gt; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;title&gt;عنوان الصفحة&lt;/title&gt; <br>
+&nbsp;&nbsp;&lt;/head&gt; <br>
+&nbsp;&nbsp;&lt;body&gt; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;h1&gt;أهلاً بك في أول درس&lt;/h1&gt; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;هذا نص تجريبي داخل فقرة.&lt;/p&gt; <br>
+&nbsp;&nbsp;&lt;/body&gt; <br>
+&lt;/html&gt;
+    </div>
+
+    <h2>2. شرح الوسوم:</h2>
+    <ul>
+        <li><strong>&lt;!DOCTYPE html&gt;</strong>: يخبر المتصفح أن هذا المستند هو HTML5.</li>
+        <li><strong>&lt;html&gt;</strong>: الحاوية الكبرى لكل محتوى الصفحة.</li>
+        <li><strong>&lt;head&gt;</strong>: يحتوي على معلومات "خلف الكواليس" مثل العنوان والترميز.</li>
+        <li><strong>&lt;body&gt;</strong>: يحتوي على كل ما يظهر فعلياً للزائر (صور، نصوص، أزرار).</li>
+    </ul>
+
+    <hr>
+    
+    <button id="finish-btn" class="btn-success" onclick="completeLesson()">لقد فهمت الدرس، أضف لي 50 نقطة! 🏆</button>
+    
+    <div id="completion-msg">
+        🎉 رائع يا بطل! لقد أتممت الدرس الأول بنجاح وتمت إضافة 50 نقطة إلى رصيدك.
+        <br>
+        <a href="../index.html" style="color: #155724;">العودة للقائمة الرئيسية</a>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    // تأكد من وضع إعدادات Firebase الخاصة بك هنا
+    const firebaseConfig = {
+  apiKey: "AIzaSyD4i_EoXZL9B7jhq0rZ3yYntSoZIc6-ibY",
+  authDomain: "myprogramingblog-574d6.firebaseapp.com",
+  databaseURL: "https://myprogramingblog-574d6-default-rtdb.firebaseio.com",
+  projectId: "myprogramingblog-574d6",
+  storageBucket: "myprogramingblog-574d6.firebasestorage.app",
+  messagingSenderId: "284468923744",
+  appId: "1:284468923744:web:75ae36f451d01d4f2e2205",
+  measurementId: "G-63QD4Y1RFW"
+};
+    firebase.initializeApp(firebaseConfig);
+
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    function completeLesson() {
+        const user = auth.currentUser;
+        if (user) {
+            // 1. تسجيل إتمام الدرس
+            db.ref('progress/' + user.uid + '/html_lesson1').set(true);
+            
+            // 2. تحديث النقاط (زيادة 50 نقطة)
+            db.ref('users/' + user.uid + '/points').transaction((points) => {
+                return (points || 0) + 50;
+            });
+
+            // 3. تحديث الواجهة
+            document.getElementById('finish-btn').style.display = 'none';
+            document.getElementById('completion-msg').style.display = 'block';
+        } else {
+            alert("من فضلك سجل دخولك أولاً لحفظ تقدمك!");
+        }
+    }
+</script>
+
+</body>
+</html>
