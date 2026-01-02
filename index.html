@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدونة البرمجة الذكية</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .auth-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        #complete-btn { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; display: none; }
+        .post-content { margin-top: 20px; font-size: 1.1em; line-height: 1.7; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="auth-bar">
+        <h2 id="welcome-msg">مرحباً بك</h2>
+        <button id="login-btn" onclick="login()" style="display:none;">دخول جوجل</button>
+        <button id="logout-btn" onclick="logout()" style="display:none; background:#dc3545; color:white; border:none; padding:5px 10px;">خروج</button>
+    </div>
+
+    <div class="post-content">
+        <h1>درس البرمجة الأول</h1>
+        <p>هنا ستكتب محتوى درسك بكل حرية، ولن يختفي أبداً.</p>
+    </div>
+
+    <div id="lesson-status" style="margin-top:30px; text-align:center;">
+        <button id="complete-btn" onclick="markDone()">إتمام هذا الدرس ✅</button>
+        <p id="done-msg" style="display:none; color:green; font-weight:bold;">لقد أتممت هذا الدرس بنجاح!</p>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    // ضع إعدادات Firebase الخاصة بك هنا
+    const firebaseConfig = {
+  apiKey: "AIzaSyD4i_EoXZL9B7jhq0rZ3yYntSoZIc6-ibY",
+  authDomain: "myprogramingblog-574d6.firebaseapp.com",
+  databaseURL: "https://myprogramingblog-574d6-default-rtdb.firebaseio.com",
+  projectId: "myprogramingblog-574d6",
+  storageBucket: "myprogramingblog-574d6.firebasestorage.app",
+  messagingSenderId: "284468923744",
+  appId: "1:284468923744:web:75ae36f451d01d4f2e2205",
+  measurementId: "G-63QD4Y1RFW"
+};
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // نظام تسجيل الدخول
+    function login() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider);
+    }
+    function logout() { auth.signOut(); }
+
+    auth.onAuthStateChanged(user => {
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const welcomeMsg = document.getElementById('welcome-msg');
+        const completeBtn = document.getElementById('complete-btn');
+
+        if (user) {
+            loginBtn.style.display = 'none';
+            logoutBtn.style.display = 'block';
+            welcomeMsg.innerText = "مرحباً: " + user.displayName;
+            checkProgress(user.uid);
+        } else {
+            loginBtn.style.display = 'block';
+            logoutBtn.style.display = 'none';
+            welcomeMsg.innerText = "برجاء تسجيل الدخول";
+            completeBtn.style.display = 'none';
+        }
+    });
+
+    function checkProgress(uid) {
+        db.ref('progress/' + uid + '/lesson1').on('value', snap => {
+            if(snap.exists()) {
+                document.getElementById('complete-btn').style.display = 'none';
+                document.getElementById('done-msg').style.display = 'block';
+            } else {
+                document.getElementById('complete-btn').style.display = 'inline-block';
+            }
+        });
+    }
+
+    function markDone() {
+        const user = auth.currentUser;
+        if(user) {
+            db.ref('progress/' + user.uid + '/lesson1').set(true);
+        }
+    }
+</script>
+
+</body>
+</html>
